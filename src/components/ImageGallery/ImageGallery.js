@@ -1,75 +1,26 @@
-import React, { Component } from 'react';
-import imageAPI from '../../services/searchImgApi';
+import React from 'react';
+import PropTypes from 'prop-types';
 import ImageGalleryItem from './ImageGalleryItem';
-import Button from '../Button';
-
 import s from './ImageGallery.module.css';
 
-export default class ImageGallery extends Component {
-  state = {
-    images: null,
-    status: 'idle',
-    error: null,
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    const prevQuery = prevProps.query;
-    const currentQuery = this.props.query;
-
-    if (prevQuery !== currentQuery) {
-      this.setState({
-        status: 'pending',
-      });
-
-      imageAPI
-        .fetchImage(currentQuery)
-        .then(({ hits }) => {
-          if (hits.length === 0) {
-            return Promise.reject(
-              new Error(
-                `Bad search query :( We have no ${currentQuery} images`,
-              ),
-            );
-          }
-
-          this.setState({
-            images: hits,
-            status: 'resolved',
-          });
-        })
-        .catch(error =>
-          this.setState({
-            error,
-            status: 'rejected',
-          }),
+const ImageGallery = ({ hits }) => {
+  return (
+    <ul className={s.ImageGallery}>
+      {hits.map(({ id, webformatURL, tags }) => {
+        return (
+          <ImageGalleryItem key={id} url={webformatURL} description={tags} />
         );
-    }
-  }
+      })}
+    </ul>
+  );
+};
 
-  render() {
-    const { images, status, error } = this.state;
+ImageGallery.propTypes = {
+  hits: PropTypes.arrayOf(
+    PropTypes.shape({
+      id: PropTypes.number.isRequired,
+    }),
+  ),
+};
 
-    if (status === 'idle') {
-      return <p>Enter in the searchbar the images you want to search</p>;
-    }
-
-    if (status === 'pending') {
-      return <div>Loading...</div>;
-    }
-
-    if (status === 'rejected') {
-      return <div>{error.message}</div>;
-    }
-
-    if (status === 'resolved') {
-      return (
-        <>
-          <ul className={s.ImageGallery}>
-            <ImageGalleryItem images={images} />
-          </ul>
-          <Button />
-        </>
-      );
-    }
-  }
-}
+export default ImageGallery;

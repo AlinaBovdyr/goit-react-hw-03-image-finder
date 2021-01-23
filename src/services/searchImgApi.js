@@ -3,12 +3,12 @@
 const BASE_URL = 'https://pixabay.com/api/';
 const KEY = '19151711-be14d41e7a0bdcd70a93cb54b';
 
-function fetchImage(searchImg) {
+function fetchImage(searchImg, page) {
   const searchParams = new URLSearchParams({
     q: searchImg,
     image_type: 'photo',
     orientation: 'horizontal',
-    page: 1,
+    page: page,
     per_page: 12,
     key: KEY,
   });
