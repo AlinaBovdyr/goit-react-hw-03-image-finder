@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import imageAPI from '../../services/searchImgApi';
 import ImageGallery from '../ImageGallery';
 import Button from '../Button';
+import LoaderImg from '../Loader';
+import InitialView from '../InitialView';
+import ErrorView from '../ErrorView';
 
 export default class ImageInfo extends Component {
   state = {
@@ -10,6 +13,7 @@ export default class ImageInfo extends Component {
     error: null,
     page: 1,
     showBtn: true,
+    loading: false,
   };
 
   getSnapshotBeforeUpdate(prevProps, prevState) {
@@ -18,8 +22,7 @@ export default class ImageInfo extends Component {
     if (prevImages.length > 0) {
       const listRef = document.querySelector('ul');
       const { bottom } = listRef.getBoundingClientRect();
-      const PAD = 48;
-      const position = document.body.clientHeight - (bottom / 4 + PAD);
+      const position = document.body.clientHeight - bottom + bottom / 8;
       return position;
     }
 
@@ -40,7 +43,7 @@ export default class ImageInfo extends Component {
 
       this.fetchImages();
     } else {
-      if (snapshot !== null) {
+      if (snapshot !== null && prevState.page > 2) {
         window.scrollTo({
           top: snapshot,
           behavior: 'smooth',
@@ -52,6 +55,8 @@ export default class ImageInfo extends Component {
   fetchImages = () => {
     const currentQuery = this.props.query;
     const currentPage = this.state.page;
+
+    this.setState({ loading: true });
 
     imageAPI
       .fetchImage(currentQuery, currentPage)
@@ -72,29 +77,33 @@ export default class ImageInfo extends Component {
           status: 'resolved',
         }));
       })
-      .catch(error => this.setState({ error, status: 'rejected' }));
+      .catch(error => this.setState({ error, status: 'rejected' }))
+      .finally(() => this.setState({ loading: false }));
   };
 
   render() {
-    const { images, status, error, showBtn } = this.state;
+    const { images, status, error, showBtn, loading } = this.state;
 
     if (status === 'idle') {
-      return <p>Enter in the searchbar the images you want to search</p>;
+      return (
+        <InitialView text="Enter in the searchbar the images you want to search" />
+      );
     }
 
     if (status === 'pending') {
-      return <div>Loading...</div>;
+      return <LoaderImg />;
     }
 
     if (status === 'rejected') {
-      return <div>{error.message}</div>;
+      return <ErrorView text={error.message} />;
     }
 
     if (status === 'resolved') {
       return (
         <>
           <ImageGallery hits={images} />
-          {showBtn && <Button onBtnClick={this.fetchImages} />}
+          {showBtn && !loading && <Button onBtnClick={this.fetchImages} />}
+          {loading && <LoaderImg />}
         </>
       );
     }
