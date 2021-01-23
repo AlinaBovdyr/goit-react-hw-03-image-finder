@@ -5,6 +5,7 @@ import Button from '../Button';
 import LoaderImg from '../Loader';
 import InitialView from '../InitialView';
 import ErrorView from '../ErrorView';
+import Modal from '../Modal';
 
 export default class ImageInfo extends Component {
   state = {
@@ -14,6 +15,9 @@ export default class ImageInfo extends Component {
     page: 1,
     showBtn: true,
     loading: false,
+    showModal: false,
+    URL: '',
+    ALT: '',
   };
 
   getSnapshotBeforeUpdate(prevProps, prevState) {
@@ -81,8 +85,29 @@ export default class ImageInfo extends Component {
       .finally(() => this.setState({ loading: false }));
   };
 
+  toggleModal = () => {
+    this.setState(({ showModal }) => ({
+      showModal: !showModal,
+    }));
+  };
+
+  handleImgClick = img => {
+    // console.log(img.dataset.source);
+    this.setState({ URL: img.dataset.source, ALT: img.alt });
+    this.toggleModal();
+  };
+
   render() {
-    const { images, status, error, showBtn, loading } = this.state;
+    const {
+      images,
+      status,
+      error,
+      showBtn,
+      loading,
+      showModal,
+      URL,
+      ALT,
+    } = this.state;
 
     if (status === 'idle') {
       return (
@@ -101,7 +126,10 @@ export default class ImageInfo extends Component {
     if (status === 'resolved') {
       return (
         <>
-          <ImageGallery hits={images} />
+          <ImageGallery hits={images} onClick={this.handleImgClick} />
+          {showModal && (
+            <Modal largeImgUrl={URL} imgAlt={ALT} onClose={this.toggleModal} />
+          )}
           {showBtn && !loading && <Button onBtnClick={this.fetchImages} />}
           {loading && <LoaderImg />}
         </>
