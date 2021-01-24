@@ -5,6 +5,7 @@ import s from './Searchbar.module.css';
 export default class Searchbar extends Component {
   state = {
     searchQuery: '',
+    page: 0,
   };
 
   handleInputChange = event => {

@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import imageAPI from '../../services/searchImgApi';
+import InitialView from '../InitialView';
+import ErrorView from '../ErrorView';
 import ImageGallery from '../ImageGallery';
 import Button from '../Button';
 import LoaderImg from '../Loader';
-import InitialView from '../InitialView';
-import ErrorView from '../ErrorView';
 import Modal from '../Modal';
 
 export default class ImageInfo extends Component {
@@ -25,9 +25,7 @@ export default class ImageInfo extends Component {
 
     if (prevImages.length > 0) {
       const listRef = document.querySelector('ul');
-      const { bottom } = listRef.getBoundingClientRect();
-      const position = document.body.clientHeight - bottom + bottom / 8;
-      return position;
+      return listRef.clientHeight;
     }
 
     return null;
@@ -38,21 +36,24 @@ export default class ImageInfo extends Component {
     const currentQuery = this.props.query;
 
     if (prevQuery !== currentQuery) {
+      prevState.page = 1;
       this.setState({
         status: 'pending',
         images: [],
-        page: 1,
         showBtn: true,
       });
 
       this.fetchImages();
-    } else {
-      if (snapshot !== null && prevState.page > 2) {
-        window.scrollTo({
-          top: snapshot,
-          behavior: 'smooth',
-        });
-      }
+    }
+
+    if (
+      prevState.images.length !== this.state.images.length &&
+      snapshot !== null
+    ) {
+      window.scrollTo({
+        top: snapshot,
+        behavior: 'smooth',
+      });
     }
   }
 
@@ -92,8 +93,8 @@ export default class ImageInfo extends Component {
   };
 
   handleImgClick = img => {
-    // console.log(img.dataset.source);
     this.setState({ URL: img.dataset.source, ALT: img.alt });
+
     this.toggleModal();
   };
 

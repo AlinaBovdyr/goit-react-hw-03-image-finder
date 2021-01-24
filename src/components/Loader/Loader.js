@@ -8,7 +8,7 @@ const LoaderImg = () => {
     <Loader
       className={s.loader}
       type="ThreeDots"
-      color="#5511b2"
+      color="#b53f97"
       height={100}
       width={200}
       timeout={3000}
